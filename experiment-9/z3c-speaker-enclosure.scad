@@ -14,18 +14,24 @@ lip_length=20;
 foot_length=sqrt(2*(box_height*box_height))/2;
 speaker_length=148.5;
 
-//rotate([0,0,45]) {
-rotate([0,0,0]) {
-    //#translate([phone_depth+wall,phone_width+75,0]) rotate([90,0,0]) rotate([0,-90,0]) #phone();
-    *left_upright();
-    *left_speaker_foot();
-    //translate([30, 45, 0]) foot_beam();
-    *translate([-10,0,0]) {
+rotate([0,0,45]) {
+//rotate([0,0,0]) {
+    translate([0,0,0]) {
+        left_upright();
+        left_speaker_foot();
+    }
+    translate([-10,0,0]) {
         right_upright();
         right_speaker_foot();
     }
     translate([-box_width/2,-100,0]) speaker_plate();
-    //speaker();
+
+    // ---------------------------
+    // debug 
+    // 
+    // speaker();
+    // translate([phone_depth+wall,phone_width+75,0])
+    // rotate([90,0,0]) rotate([0,-90,0]) #phone();
 }
 
 module phone() {
@@ -78,7 +84,7 @@ module channel(r, dia, length, depth) {
     }
     
     // bottom ledge for phone
-    translate([wall,length-phone_width-wall,0]) cube([phone_depth, wall, 6.5+wall]);
+    translate([wall,length-phone_width-wall,0]) cube([phone_depth, wall, 4.5+wall]);
     // receiver for faceplate attach screw
     hull() {
         translate([wall/2, 75-phone_width+phone_width/2, depth/2]) rotate([0,90,0]) cylinder(r=3.5, h=phone_depth+wall);
@@ -167,9 +173,10 @@ module speaker() {
 module speaker_plate() {
     side_margin=phone_lengthwise_margin+wall;
     r=12;
+    inner_r=r-0.25;
     
     plate_width=viewport_width;
-    plate_height=phone_width;
+    plate_height=phone_width+wall*2;
     cell=plate_width/16;
     holes_x_count=plate_width/cell;
     holes_y_count=plate_height/6;
@@ -178,15 +185,17 @@ module speaker_plate() {
     difference() {
         union() {    
             translate([r,0,0]) {
-                resize([0,phone_width,0], auto=[false,true,false])
+                // resize([0,phone_width,0], auto=[false,true,false])
                 cube([plate_width, plate_height, wall]);
                 //honeycomb(holes_x_count, holes_y_count, 6, wall, 60);
             }
             // top lip
-            translate([r, 0, 0]) cube([plate_width, wall, phone_depth+wall]);
+            translate([r+5, 0, 0]) cube([plate_width-5*2, wall, wall*2]);
+            // bottom lip
+            translate([r, plate_height-wall, 0]) cube([plate_width, wall, phone_depth+wall]);
             // cutout/marker for left speaker faceplate attach point
-            #translate([r,plate_height/2,0]) cylinder(r=12, h=wall+0.5);
-            #translate([r+plate_width,plate_height/2,0]) cylinder(r=12, h=wall+0.5);
+            #translate([r+1.5,plate_height/2,0]) cylinder(r=inner_r, h=wall+0.5);
+            translate([r+plate_width-1.5,plate_height/2,0]) cylinder(r=inner_r, h=wall+0.5);
         }
         union() {
             translate([r*2,plate_height/2-r,0]) cube([plate_width-r*2, r*2, wall]);
