@@ -14,8 +14,8 @@ lip_length=20;
 foot_length=sqrt(2*(box_height*box_height))/2;
 speaker_length=148.5;
 
-rotate([0,0,45]) {
-//rotate([0,0,0]) {
+//rotate([0,0,45]) {
+rotate([0,0,0]) {
     translate([0,0,0]) {
         left_upright();
         left_speaker_foot();
@@ -177,29 +177,26 @@ module speaker_plate() {
     
     plate_width=viewport_width;
     plate_height=phone_width+wall*2;
-    cell=plate_width/16;
-    holes_x_count=plate_width/cell;
-    holes_y_count=plate_height/6;
-    echo("holes_x_count:", holes_x_count);
-
+    
     difference() {
         union() {    
             translate([r,0,0]) {
-                // resize([0,phone_width,0], auto=[false,true,false])
                 cube([plate_width, plate_height, wall]);
-                //honeycomb(holes_x_count, holes_y_count, 6, wall, 60);
             }
             // top lip
             translate([r+5, 0, 0]) cube([plate_width-5*2, wall, wall*2]);
             // bottom lip
             translate([r, plate_height-wall, 0]) cube([plate_width, wall, phone_depth+wall]);
-            // cutout/marker for left speaker faceplate attach point
-            #translate([r+1.5,plate_height/2,0]) cylinder(r=inner_r, h=wall+0.5);
+            // faceplate attach point lugs
+            translate([r+1.5,plate_height/2,0]) cylinder(r=inner_r, h=wall+0.5);
             translate([r+plate_width-1.5,plate_height/2,0]) cylinder(r=inner_r, h=wall+0.5);
         }
         union() {
             translate([r*2,plate_height/2-r,0]) cube([plate_width-r*2, r*2, wall]);
-            translate([r,plate_height/2-r,wall]) cube([plate_width, r*2, wall]);
+            *translate([r,plate_height/2-r,wall]) #cube([plate_width, r*2, wall]);
+            // the holes grid
+            translate([r+1,1.5,0]) honeycomb(plate_width, plate_height/2-r, 3, 6);
+            translate([r+1,plate_height/2+r,0]) honeycomb(plate_width, plate_height/2-r, 3, 6);
         }
     }
 }
@@ -207,19 +204,22 @@ module phone_outline() {
     cube([phone_length, phone_width, phone_depth]);
 }
 
-module honeycomb(x, y, cell, h, fill)  {
-    sqrt3=sqrt(3);      
-    w=cell*fill/100;            // calculate wall thickness
-    echo("wall:", w);           // display (walls won't get printed when too thin)
-
-  difference()  {
-    cube([(1.5*x+0.5)*cell+w, cell*sqrt3*y+1.5*w-w/2, h]);  // rectangular plate
-
-    translate([w-cell*2, w, wall])
-    linear_extrude(wall)  {       // punch with matrix of hexagonal prisms
-      for (a=[0:x/2+1], b=[0:y], c=[0:1/2:1/2])
-      translate([(a+c)*3*cell-w/2, (b+c)*sqrt3*cell-w/2])
-      circle(cell-w, $fn=6);
+module honeycomb(width, height, inner_d, spacing)  {
+    unit_w=inner_d+spacing;
+    cols=-1+floor((width-unit_w)/unit_w);
+    rows=-1+floor(height/(unit_w*0.66));
+    col=0;
+    row=0;
+    x=0;
+    indent_x = 0;
+    translate([unit_w/2,unit_w/2,0]) #union() {
+        for (row=[0:rows]) {
+            for (col=[0:cols]) {
+                x = (row%2==0) ? unit_w/2+col*unit_w : col*unit_w;
+                translate([x, 0.66*row*unit_w, 0]) cylinder(r=inner_d/2, h=wall);
+                if (row%2 > 0)
+                    translate([x+unit_w, 0.66*row*unit_w, 0]) cylinder(r=inner_d/2, h=wall);
+            }
+        }
     }
-  }
 }
