@@ -14,8 +14,8 @@ lip_length=20;
 foot_length=sqrt(2*(box_height*box_height))/2;
 speaker_length=148.5;
 
-//rotate([0,0,45]) {
-rotate([0,0,0]) {
+rotate([0,0,45]) {
+// rotate([0,0,0]) {
     translate([0,0,0]) {
         left_upright();
         left_speaker_foot();
@@ -24,12 +24,13 @@ rotate([0,0,0]) {
         right_upright();
         right_speaker_foot();
     }
-    translate([-box_width/2,-100,0]) speaker_plate();
+    translate([-box_width/2,-80,0]) speaker_plate();
+    translate([-box_width/2,-130,0]) base_strap();
 
     // ---------------------------
     // debug 
     // 
-    // speaker();
+    *speaker();
     // translate([phone_depth+wall,phone_width+75,0])
     // rotate([90,0,0]) rotate([0,-90,0]) #phone();
 }
@@ -47,9 +48,9 @@ module left_upright() {
         channel(r, dia, length, depth);
         union() {
             // cutout for left phone speaker
-            translate([0, 75+phone_width/2, 3+phone_lengthwise_margin]) rotate([0,90,0]) cylinder(r=12, h=wall);
+            translate([0, 77.5+phone_width/2, 3+phone_lengthwise_margin]) rotate([0,90,0]) cylinder(r=12, h=wall);
             // cutout/marker for left speaker faceplate attach point
-            translate([0, 75-phone_width+phone_width/2, 3+phone_lengthwise_margin]) rotate([0,90,0]) cylinder(r=12, h=0.5);
+            translate([0, 77.5-phone_width+phone_width/2, 3+phone_lengthwise_margin]) rotate([0,90,0]) cylinder(r=12, h=0.5);
         }
     }
     // the horizontal beam
@@ -67,10 +68,14 @@ module foot_beam() {
         translate([28.5+r+1.5,depth/2+15,0]) cylinder(r=r, h=depth);
     }
 }
+module divot() {
+    translate([0.75, 0, 0.5]) rotate([0, 180, 0]) cylinder(r1=0.75, r2=0, height=1.5);
+}
 module right_upright() {
     mirror([1,0,0]) left_upright();
 }
 module channel(r, dia, length, depth) {
+    d=phone_depth+wall;
     difference() {
         hull() {
             cube([phone_depth+wall*2, length-wall, depth]);
@@ -86,10 +91,7 @@ module channel(r, dia, length, depth) {
     // bottom ledge for phone
     translate([wall,length-phone_width-wall,0]) cube([phone_depth, wall, 4.5+wall]);
     // receiver for faceplate attach screw
-    hull() {
-        translate([wall/2, 75-phone_width+phone_width/2, depth/2]) rotate([0,90,0]) cylinder(r=3.5, h=phone_depth+wall);
-        translate([wall/2, 75-phone_width+phone_width/2-3.5, 0]) cube([phone_depth+wall, 7, depth/2]);
-    }
+    translate([wall/2, 77.5-phone_width+phone_width/2-12, 0]) cube([phone_depth+wall, 24, depth]);
 }
 
 module _speaker_foot() {
@@ -122,8 +124,12 @@ module _speaker_foot() {
 module left_speaker_foot() {
     difference() {
         _speaker_foot();
-        // make concavity for radiused speaker body
-        speaker();
+        union() {
+            // make concavity for radiused speaker body
+            speaker();
+            // receiver for the base strap
+            #translate([70, 49, 16]) rotate([0,90,-54]) cylinder(r=12.5, h=1.5);
+        }
     }
 }
 
@@ -153,6 +159,10 @@ module speaker() {
                     translate([-r,(r-38)/2,speaker_length-r-r]) cube([r,r+r,r+r]);
                 }
                 hull() {
+                    translate([0,r,r]) rotate([0,90,0]) cylinder(r=r/2, h=r-3);
+                    translate([0,r,r/2]) rotate([0,90,0]) cylinder(r=r/2, h=r-3);
+                }
+                hull() {
                     difference() {
                         hull() {
                             translate([0,r,r]) sphere(r=r);
@@ -176,7 +186,7 @@ module speaker_plate() {
     inner_r=r-0.25;
     
     plate_width=viewport_width;
-    plate_height=phone_width+wall*2;
+    plate_height=phone_width;
     
     difference() {
         union() {    
@@ -190,16 +200,46 @@ module speaker_plate() {
             // faceplate attach point lugs
             translate([r+1.5,plate_height/2,0]) cylinder(r=inner_r, h=wall+0.5);
             translate([r+plate_width-1.5,plate_height/2,0]) cylinder(r=inner_r, h=wall+0.5);
+            
+            *translate([r,plate_height/2-0.5,wall]) #cube([plate_width, 1, wall]);
         }
         union() {
-            translate([r*2,plate_height/2-r,0]) cube([plate_width-r*2, r*2, wall]);
-            *translate([r,plate_height/2-r,wall]) #cube([plate_width, r*2, wall]);
+            // hole markers for lugs
+            translate([r+1.5-6.5,plate_height/2,wall]) #divot();
+            translate([r+plate_width-1.5+6.5,plate_height/2,wall]) #divot();
+            
+            #hull() {
+                translate([r*2+r*0.25,plate_height/2,0]) cylinder(r=inner_r, h=wall+0.5);
+                translate([plate_width-r*0.25,plate_height/2,0]) cylinder(r=inner_r, h=wall+0.5);
+            }
+            // translate([r*2,plate_height/2-r,0]) cube([plate_width-r*2, r*2, wall]);
             // the holes grid
             translate([r+1,1.5,0]) honeycomb(plate_width, plate_height/2-r, 3, 6);
             translate([r+1,plate_height/2+r,0]) honeycomb(plate_width, plate_height/2-r, 3, 6);
         }
     }
 }
+module base_strap() {
+    side_margin=phone_lengthwise_margin+wall;
+    r=12;
+    inner_r=r-0.25;
+    
+    plate_width=viewport_width;
+    plate_height=phone_width;
+    difference() {
+        hull() {
+            // lugs
+            translate([r+1.5,plate_height/2,0]) cylinder(r=inner_r, h=wall+0.5);
+            translate([r+plate_width-1.5,plate_height/2,0]) cylinder(r=inner_r, h=wall+0.5);
+        }
+        union() {
+            // hole markers for lugs
+            translate([r+1.5-6.5,plate_height/2,wall]) #divot();
+            translate([r+plate_width-1.5+6.5,plate_height/2,wall]) #divot();
+        }
+    }
+
+    }
 module phone_outline() {
     cube([phone_length, phone_width, phone_depth]);
 }
