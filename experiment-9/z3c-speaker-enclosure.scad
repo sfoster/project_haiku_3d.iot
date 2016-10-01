@@ -91,7 +91,7 @@ module channel(r, dia, length, depth) {
     // bottom ledge for phone
     translate([wall,length-phone_width-wall,0]) cube([phone_depth, wall, 4.5+wall]);
     // receiver for faceplate attach screw
-    translate([wall/2, 77.5-phone_width+phone_width/2-12, 0]) cube([phone_depth+wall, 24, depth]);
+    translate([wall/2, 82.5-phone_width+phone_width/2-12, 0]) #cube([phone_depth+wall, 14, 14]);
 }
 
 module _speaker_foot() {
