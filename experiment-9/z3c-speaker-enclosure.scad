@@ -14,8 +14,8 @@ lip_length=20;
 foot_length=sqrt(2*(box_height*box_height))/2;
 speaker_length=148.5;
 
-rotate([0,0,45]) {
-// rotate([0,0,0]) {
+//rotate([0,0,45]) {
+rotate([0,0,0]) {
     translate([0,0,0]) {
         left_upright();
         left_speaker_foot();
@@ -126,7 +126,7 @@ module left_speaker_foot() {
         _speaker_foot();
         union() {
             // make concavity for radiused speaker body
-            speaker();
+            translate([0,0,-5]) speaker();
             // receiver for the base strap
             #translate([70, 49, 16]) rotate([0,90,-54]) cylinder(r=12.5, h=1.5);
         }
